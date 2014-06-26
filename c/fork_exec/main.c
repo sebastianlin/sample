@@ -21,12 +21,12 @@ int spawn(char *prog, char **arg_list)
 int main()
 {
 	char *arg_list[] = {
-		"ls",
-		"-l",
-		"/tmp",
+		(char*)"ls",
+		(char*)"-l",
+		(char*)"/tmp",
 		NULL };
 
-	spawn("ls", arg_list);
+	spawn((char*)"ls", arg_list);
 }
 
 
