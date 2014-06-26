@@ -1,5 +1,6 @@
 
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -14,7 +15,7 @@ int spawn(char *prog, char **arg_list)
 	} else {
 		execvp(prog, arg_list);
 		fprintf(stderr, "spawn error\n");
-		return -1;
+		exit(-1);
 	}
 }
 
