@@ -1,11 +1,14 @@
 
 
+#CROSS_COMPILE ?= arm-linux-
+CFLAGS ?= -static -g
+
 all:
-	g++ main.cpp -std=c++0x -pthread -o test
+	$(CROSS_COMPILE)g++ main.cpp $(CFLAGS) -std=c++0x -pthread -o test
 
 
 clean:
-	rm *.o test
+	rm -f *.o test
 
 
 
