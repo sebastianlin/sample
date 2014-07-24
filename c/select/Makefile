@@ -9,7 +9,7 @@ all:
 
 
 clean:
-	rm *.o test
+	rm -f *.o test
 
 
 
