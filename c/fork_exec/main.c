@@ -3,6 +3,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+
+void sig_handler(int signo)
+{
+	if (signo == SIGCHLD)
+		wait(NULL);
+}
 
 int spawn(char *prog, char **arg_list)
 {
@@ -15,6 +23,7 @@ int spawn(char *prog, char **arg_list)
 	} else {
 		execvp(prog, arg_list);
 		fprintf(stderr, "spawn error\n");
+		perror("");
 		exit(-1);
 	}
 }
@@ -27,7 +36,13 @@ int main()
 		(char*)"/tmp",
 		NULL };
 
+	if (signal(SIGCHLD, sig_handler) == SIG_ERR) {
+		printf("\ncan't register SIGCHLD\n");
+		exit(-1);
+	}
+
 	spawn((char*)"ls", arg_list);
+	puts("Parent end.");
 }
 
 
