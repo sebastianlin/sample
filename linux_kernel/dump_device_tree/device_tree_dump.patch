@@ -1,0 +1,61 @@
+diff --git a/init/main.c b/init/main.c
+index bd98381..a793d82 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -76,6 +76,8 @@
+ #include <linux/elevator.h>
+ #include <linux/random.h>
+ #include <linux/bootperf.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -87,6 +89,8 @@
+ #include <asm/smp.h>
+ #endif
+ 
++static void print_device_tree_node(struct device_node *node, int depth);
++
+ static int kernel_init(void *);
+ 
+ extern void init_IRQ(void);
+@@ -639,6 +643,7 @@ asmlinkage void __init start_kernel(void)
+ 
+ 	ftrace_init();
+ 
++	print_device_tree_node(of_find_node_by_path("/"), 0);
+ 	/* Do the rest non-__init'ed, we're now alive */
+ 	rest_init();
+ }
+@@ -926,3 +931,30 @@ static noinline void __init kernel_init_freeable(void)
+ 	/* rootfs is available now, try loading default modules */
+ 	load_default_modules();
+ }
++
++static void print_device_tree_node(struct device_node *node, int depth) {
++	int i = 0;
++	struct device_node *child;
++	struct property    *properties;
++	char                indent[255] = "";
++
++	for(i = 0; i < depth * 3; i++) {
++		indent[i] = ' ';
++	}
++	indent[i] = '\0';
++	++depth;
++
++	for_each_child_of_node(node, child) {
++		pr_emerg("%s{ name = %s\n", indent, child->name);
++		pr_emerg("%s  type = %s\n", indent, child->type);
++		for (properties = child->properties; properties != NULL; properties = properties->next) {
++			if(!strcmp(properties->name, "compatible"))
++				pr_emerg("%s  %s = %s\n", indent, properties->name, (char*)properties->value);
++			else
++				pr_emerg("%s  %s (%d)\n", indent, properties->name, properties->length);
++		}
++		print_device_tree_node(child, depth);
++		pr_emerg("%s}\n", indent);
++	}
++}
++
