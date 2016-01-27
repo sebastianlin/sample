@@ -4,7 +4,7 @@
 CFLAGS ?= -static -g
 
 all:
-	$(CROSS_COMPILE)g++ main.cpp $(CFLAGS) -std=c++0x -pthread -o test
+	$(CROSS_COMPILE)gcc main.c $(CFLAGS) -pthread -o test
 
 
 clean:
