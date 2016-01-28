@@ -664,21 +664,28 @@ void print_memory(char *filename, int pid, void *addr, unsigned long len) {
   fclose(fp);
 }
 int main(int argc, char **argv, char **envp) {
-	int pid, r, count, c;
+	int pid, r, count, c, i;
 //	char buf[4];
 	struct user_regs_struct regs;
 	char *pid_arg=NULL;
+	int trace_child=0;
 
-	while ((c = getopt (argc, argv, "p:")) != -1) {
+	while ((c = getopt (argc, argv, "p:c")) != -1) {
 		switch (c)
 		{
 			case 'p':
 				pid_arg = optarg;
 				break;
+			case 'c':
+				trace_child=1;
+				break;
 			default:
 				puts("Unknown parameters!");
 		}
 	}
+	
+	// The remaining non-option argument
+	argv+=optind;
 
 	if(pid_arg) {
 		char *ptr=pid_arg;
@@ -689,7 +696,7 @@ int main(int argc, char **argv, char **envp) {
 		pid = atoi(pid_arg);
 		printf("Attaching to pid %d\n", pid);
 	} else {
-		argv++;
+//		argv++;
 		pid = do_forkexec(argv, envp);
 	}
 	
@@ -707,11 +714,19 @@ int main(int argc, char **argv, char **envp) {
 		assert(regs.orig_rax >= 0);
 		assert(regs.orig_rax < sizeof(syscall_names));
 		if(regs.rax != -38) {
-			printf("%d %s(%ld) = %ld;\n",
-			       count,
-			       syscall_names[regs.orig_rax],
-			       regs.rdi,
-			       regs.rax);
+			if(trace_child) {
+				if(!strcmp(syscall_names[regs.orig_rax], "clone"))
+					printf("Clone: TID=%ld\n", regs.rax);
+				if(!strcmp(syscall_names[regs.orig_rax], "fork"))
+					printf("Fork: PID=%ld\n", regs.rax);
+				if(!strcmp(syscall_names[regs.orig_rax], "vfork"))
+					printf("VFork: PID=%ld\n", regs.rax);
+			} else {
+				printf("%d %s(%ld) = %ld;\n",
+				       count,
+				       syscall_names[regs.orig_rax],
+				       regs.rdi,
+				       regs.rax);
 #else
 		assert(regs.orig_eax > 0);
 		assert(regs.orig_eax < sizeof(syscall_names));
@@ -722,12 +737,13 @@ int main(int argc, char **argv, char **envp) {
 			       regs.ebx,
 			       regs.eax);
 #endif
-			count++;
-			fflush(stdout);
+				count++;
+				fflush(stdout);
 //			if (count == 4) {
 //			  print_memory("mem", pid, (void*)0x08048114L -  1024*10, 0x080495e0L - 0x08048114L + 1024*64);
 //			  break;
 //			}
+			}
 		}
 //		printregs(&regs);
 		ptrace(PTRACE_SYSCALL, pid, 0, 0);
