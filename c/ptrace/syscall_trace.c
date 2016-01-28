@@ -664,12 +664,29 @@ void print_memory(char *filename, int pid, void *addr, unsigned long len) {
   fclose(fp);
 }
 int main(int argc, char **argv, char **envp) {
-        int pid, r, count;
+	int pid, r, count, c;
 //	char buf[4];
 	struct user_regs_struct regs;
+	char *pid_arg=NULL;
 
-	if (isdigit(argv[1][0])) {
-		pid = atoi(argv[1]);
+	while ((c = getopt (argc, argv, "p:")) != -1) {
+		switch (c)
+		{
+			case 'p':
+				pid_arg = optarg;
+				break;
+			default:
+				puts("Unknown parameters!");
+		}
+	}
+
+	if(pid_arg) {
+		char *ptr=pid_arg;
+		while(*ptr) {
+			assert(isdigit(*ptr));
+			ptr++;
+		}
+		pid = atoi(pid_arg);
 		printf("Attaching to pid %d\n", pid);
 	} else {
 		argv++;
