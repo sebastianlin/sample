@@ -1,6 +1,6 @@
 
 
-// Originally, this program should run on X86-32. I ported it to X86_64 and change corresponding registers. I donot know if this modification is ok.
+// Originally, this program is from http://lindi.iki.fi/lindi/ptrace-memdump.c and should run on X86-32. I ported it to X86_64 and change corresponding registers. I donot know if this modification is ok.
 // use ptrace() to trace syscalls made by a process
 
 #include <stdio.h>
