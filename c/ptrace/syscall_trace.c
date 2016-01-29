@@ -15,6 +15,7 @@
 #include <sys/user.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #define X86_64
 
@@ -689,12 +690,28 @@ int main(int argc, char **argv, char **envp) {
 
 	if(pid_arg) {
 		char *ptr=pid_arg;
+		char dir_name[128];
+		DIR *dir;
+		struct dirent *ent;
+
 		while(*ptr) {
 			assert(isdigit(*ptr));
 			ptr++;
 		}
 		pid = atoi(pid_arg);
 		printf("Attaching to pid %d\n", pid);
+
+		sprintf(dir_name, "/proc/%d/task", pid);
+		if ((dir = opendir (dir_name)) != NULL) {
+			while ((ent = readdir (dir)) != NULL) {
+				if(strcmp(ent->d_name, ".") && strcmp(ent->d_name, "..") && strcmp(ent->d_name, pid_arg) && ent->d_type==DT_DIR)
+					printf ("Already created thread:\t%s\n", ent->d_name);
+			}
+			closedir (dir);
+		} else {
+			perror ("");
+			exit(-1);
+		}
 	} else {
 //		argv++;
 		pid = do_forkexec(argv, envp);
