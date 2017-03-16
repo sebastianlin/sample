@@ -1,4 +1,6 @@
 #!/bin/bash
+# Try to key "./getopts.sh  install aaa"  and "./getopts.sh  install aaa -t bbb"
+
 
 package=""  # Default to empty package
 target=""  # Default to empty target
